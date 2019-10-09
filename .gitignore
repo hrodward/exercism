@@ -17,3 +17,6 @@ gradle-app.setting
 */**.settings
 */**.project
 */**build.gradle
+*/**.classpath
+
+*/**/bin/
