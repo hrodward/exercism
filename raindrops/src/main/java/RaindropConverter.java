@@ -2,14 +2,12 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 
 class RaindropConverter {
 
     private static final int MAX_FACTOR = 7;
 
-    static String convert(int number) {
+    String convert(int number) {
         StringBuilder raindropSpeak = new StringBuilder();
         List<Integer> factors = getFactors(number, MAX_FACTOR); // second param gives versatility
         for (Integer factor : factors) {
@@ -35,7 +33,7 @@ class RaindropConverter {
         return raindropSpeak.toString();
     }
 
-    private static List<Integer> getFactors(int number, int maxFactor) {
+    private List<Integer> getFactors(int number, int maxFactor) {
         List<Integer> factors = new ArrayList<>();
         factors.add(1);
         for (int i = 2; i <= Math.min(number, maxFactor + 1); i++) {
