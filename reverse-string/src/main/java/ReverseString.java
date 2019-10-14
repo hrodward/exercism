@@ -1,5 +1,3 @@
-import java.util.stream.Stream;
-
 class ReverseString {
     String reverse(String inputString) {
         int inLength = inputString.length();

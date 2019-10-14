@@ -2,7 +2,7 @@ class PigLatinTranslator {
 
   private static final String AY = "ay";
 
-  static String translate(String phrase) {
+  String translate(String phrase) {
     String pigLatinTranslation = phrase;
     for (String word : phrase.split(" ")) {
       pigLatinTranslation = processWord(pigLatinTranslation, word);
@@ -10,7 +10,7 @@ class PigLatinTranslator {
     return pigLatinTranslation;
   }
 
-  private static String processWord(String pigLatinTranslation, String word) {
+  private String processWord(String pigLatinTranslation, String word) {
     boolean isFirst = true;
     String cluster = "";
     char[] charArray = word.toCharArray();
@@ -60,18 +60,6 @@ class PigLatinTranslator {
 
   private static boolean isVowel(char c) {
     return "aeiou".contains(String.valueOf(c));
-  }
-
-  public static void main(String[] args) {
-    System.out.println("");
-    // System.out.println("apple=" + translate("apple"));
-    // System.out.println("xray=" + translate("xray"));
-    // System.out.println("yttria=" + translate("yttria"));
-    // System.out.println("square=" + translate("square"));
-    // System.out.println("chair=" + translate("chair"));
-    // System.out.println("rhythm=" + translate("rhythm"));
-    // System.out.println("my=" + translate("my"));
-    System.out.println("quick fast run=" + translate("quick fast run")); // "ickquay astfay unray"
   }
 
 }
