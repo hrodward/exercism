@@ -14,10 +14,13 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 
 */**.exercism
-*/**.settings
-*/**.project
+
+
 */**build.gradle
-*/**.classpath
+
 .vscode
+.classpath
+.project
+.settings
 
 */**/bin/
