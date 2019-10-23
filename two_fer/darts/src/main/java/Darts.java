@@ -10,7 +10,7 @@ class Darts {
 
     int score() {
         int score = 0;
-        double distance = point.distance(0, 0);
+        double distance = point.distance(Point2D.ZERO);
 
         if (distance <= Target.INNER.radius) {
             score = Target.INNER.score;
