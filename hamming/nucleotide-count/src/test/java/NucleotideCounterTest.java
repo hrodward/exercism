@@ -68,6 +68,6 @@ public class NucleotideCounterTest {
     @Test
     public void testDnaStringHasInvalidNucleotides() {
         expectedException.expect(IllegalArgumentException.class);
-        NucleotideCounter nucleotideCounter = new NucleotideCounter("AGXXACT");
+        new NucleotideCounter("AGXXACT");
     }
 }
