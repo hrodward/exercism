@@ -19,7 +19,6 @@ build.gradle
 .vscode
 .classpath
 .project
-/.settings
 .settings
 
 */**/bin/
