@@ -43,7 +43,7 @@ public class ResistorColorTest {
     public void testColors() {
         String[] expected = {"black", "brown", "red", "orange", "yellow", "green", "blue", "violet", "grey", "white"};
 
-        assertEquals(expected, resistorColor.colors());
+        org.junit.Assert.assertArrayEquals(expected, resistorColor.colors());
     }
     
 }
