@@ -18,10 +18,9 @@ class RnaTranscription {
             return "";
         }
         return Stream
-                .of(dnaStrand.split(""))
-                .parallel()
-                .map(c -> dictionary.get(c))
-                .collect(Collectors.joining());
+            .of(dnaStrand.split(""))
+            .map(dictionary::get)
+            .collect(Collectors.joining());
     }
 
 }
