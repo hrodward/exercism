@@ -1,7 +1,5 @@
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 class Scrabble {
 
@@ -28,10 +26,6 @@ class Scrabble {
     }
 
     int getScore() {
-        if (word == null || word.length() == 0) {
-            return 0;
-        }
-        Stream<String> stream = Stream.of(word.toUpperCase().split(""));
-        return stream.collect(Collectors.summingInt(s -> SCORES.get(s.charAt(0))));
+        return word.toUpperCase().chars().map(n -> SCORES.get((char) n)).sum();
     }
 }
