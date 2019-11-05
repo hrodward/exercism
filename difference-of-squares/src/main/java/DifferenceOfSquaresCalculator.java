@@ -4,8 +4,7 @@ class DifferenceOfSquaresCalculator {
         if (n < 0) {
             throw new IllegalArgumentException("Only natural integers accepted");
         }
-        int floor = Math.floorDiv(n, 2);
-        int sumN = (n + 1) * floor + (n % 2 == 0 ? 0 : floor + 1);
+        int sumN = n * (n + 1) / 2;
         return (int) Math.pow(sumN, 2);
     }
 
