@@ -6,6 +6,7 @@ class HandshakeCalculator {
 
     private static final int REVERSE  = 0b10000;
     private static final int MAX_CODE = 0b11111;
+    private static final Signal[] SIGNALS = Signal.values();
 
     List<Signal> calculateHandshake(int number) {
         if (number < 0 || number > MAX_CODE) {
@@ -22,15 +23,15 @@ class HandshakeCalculator {
             .reverse()
             .chars()
             .forEach(codePoint -> {
+                int currentIndex = index.getAndIncrement();
                 if((char) codePoint == '1') {
-                    Signal signal = Signal.values()[index.get()];
+                    Signal signal = SIGNALS[currentIndex];
                     if (isReverseOrder) {
                         handshake.add(0, signal);
                     } else {
                         handshake.add(signal);
                     }
                 }
-                index.incrementAndGet();
             });
         return handshake;
     }
