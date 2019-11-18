@@ -16,7 +16,6 @@ class MinesweeperBoard {
 	}
 
 	public List<String> withNumbers() {
-
 		if (inputBoard.size() == 0) {
 			return Collections.emptyList();
 		} else if (inputBoard.size() == 1 && "".contentEquals(inputBoard.get(0))) {
@@ -24,6 +23,25 @@ class MinesweeperBoard {
 		}
 		mines = findAllMines();
 		return fillBoard();
+	}
+
+	private List<Point2D> findAllMines() {
+		final Point point = new Point(-1, -1);
+		return 
+				inputBoard.stream()
+					.flatMap(rowAsString -> {
+      			Stream<Point2D> rowMines = Stream.of(rowAsString.split(""))
+      					.map(position -> {
+          				point.x++;
+          				return "*".equals(position) ? new Point(point) : null;
+          			})
+      					.filter(p -> p != null)
+      					.flatMap(Stream::of);
+      			point.y++;
+      			point.x = -1;
+      			return rowMines;
+					})
+					.collect(Collectors.toList());
 	}
 
 	private List<String> fillBoard() {
@@ -49,25 +67,6 @@ class MinesweeperBoard {
 		}
 
 		return outputRow.toString();
-	}
-
-	private List<Point2D> findAllMines() {
-		final Point point = new Point(-1, -1);
-		return 
-				inputBoard.stream()
-					.flatMap(rowAsString -> {
-      			Stream<Point2D> rowMines = Stream.of(rowAsString.split(""))
-      					.map(position -> {
-          				point.x++;
-          				return "*".equals(position) ? new Point(point) : null;
-          			})
-      					.filter(p -> p != null)
-      					.flatMap(Stream::of);
-      			point.y++;
-      			point.x = -1;
-      			return rowMines;
-					})
-					.collect(Collectors.toList());
 	}
 
 }
