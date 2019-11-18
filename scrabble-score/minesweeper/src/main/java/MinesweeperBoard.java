@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 class MinesweeperBoard {
 	private List<String> inputBoard;
+	private List<Point2D> mines;
 
 	public MinesweeperBoard(List<String> inputBoard) {
 		super();
@@ -21,19 +22,19 @@ class MinesweeperBoard {
 		} else if (inputBoard.size() == 1 && "".contentEquals(inputBoard.get(0))) {
 			return Collections.singletonList("");
 		}
-
-		return fillBoard(findAllMines());
+		mines = findAllMines();
+		return fillBoard();
 	}
 
-	private List<String> fillBoard(List<Point2D> mines) {
+	private List<String> fillBoard() {
 		List<String> board = new ArrayList<String>();
 		for (int y = 0; y < inputBoard.size(); y++) {
-			board.add(traverseRow(y, mines));
+			board.add(traverseRow(y));
 		}
 		return board;
 	}
 
-	private String traverseRow(int y, List<Point2D> mines) {
+	private String traverseRow(int y) {
 		StringBuilder outputRow = new StringBuilder();
 		String[] positions = inputBoard.get(y).split("");
 
