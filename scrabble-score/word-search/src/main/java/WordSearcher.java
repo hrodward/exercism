@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class WordSearcher {
 
@@ -102,59 +103,35 @@ class WordSearcher {
 		final int limitX = vv[0].length;
 		final char secondChar = searchWord.charAt(1);
 
-//		Optional<WordLocation> findFirst = IntStream.rangeClosed(startY - 1, startY + 1).mapToObj(rowIndex ->
-//  		IntStream.rangeClosed(startX - 1, startX + 1)
-//		    .peek(colIndex -> System.out.println("[" + rowIndex + "," + colIndex + "]"))
-//		    .filter(colIndex -> rowIndex > 0 && rowIndex <= limitY && colIndex > 0 && colIndex <= limitX)
-//		    .peek(colIndex -> System.out.println(" filtered: [" + rowIndex + "," + colIndex + "]"))
-//    		.mapToObj(colIndex -> {
-//    			if (secondChar == vv[rowIndex - 1][colIndex - 1]) {
-//    				int diffY = rowIndex - startY;
-//    				int diffX = colIndex - startX;
-//    				Direction dir = Direction.getDirectionByIncrements(diffX, diffY);
-//    				System.out.println("    Direction="+dir);
-//    				final Pair end = verifyDirection(searchWord, vv, startY, startX, dir);
-//    				if (end != null) {
-//    					return new WordLocation(new Pair(startX, startY), end);
-//    				}
-//    			}
-//    			return null;
-//    		})
-//    		.peek(optional -> System.out.println("    Optional="+optional))
-//    		.filter(optional -> optional != null)
-//    		.peek(optional -> System.out.println("      Filtered Optional="+optional))
-//		)
-//		.flatMap(in -> in)
-//		.findFirst();
-//		return findFirst;
+		Optional<Pair> findFirst =
+				IntStream.rangeClosed(startY - 1, startY + 1)
+				.mapToObj(rowIndex ->
+      		IntStream.rangeClosed(startX - 1, startX + 1)
+    		    .filter(colIndex -> rowIndex > 0 && rowIndex <= limitY && colIndex > 0 && colIndex <= limitX && secondChar == vv[rowIndex - 1][colIndex - 1])
+        		.mapToObj(colIndex -> {
+      				int diffY = rowIndex - startY;
+      				int diffX = colIndex - startX;
+      				Direction dir = Direction.getDirectionByIncrements(diffX, diffY);
+      				return verifyDirection(searchWord, vv, startY, startX, dir);
+        		})
+        		.filter(o -> o != null)
+    		)
+    		.flatMap(in -> in)
+    		.findFirst();
 
-				for (int y = startY - 1; y <= startY + 1; y++) {
-					for (int x = startX - 1; x <= startX + 1; x++) {
-						if (y <= 0 || y > limitY || x <= 0 || x > limitX || y == startY && x == startX) {
-							continue;
-						}
-						if (secondChar == vv[y - 1][x - 1]) {
-							int diffY = y - startY;
-							int diffX = x - startX;
-							Direction dir = Direction.getDirectionByIncrements(diffX, diffY);
-							final Pair end = verifyDirection(searchWord, vv, startY, startX, dir);
-							if (end != null) {
-								return Optional.of(new WordLocation(new Pair(startX, startY), end));
-							}
-						}
-					}
-				}
-				return Optional.empty();
-
+		if (findFirst.isPresent()) {
+			return Optional.of(new WordLocation(new Pair(startX, startY), findFirst.get()));
+		}
+		return Optional.empty();
 	}
 
 	private Pair verifyDirection(final String searchWord, final char[][] vv, final int startY, final int startX, final Direction dir) {
-		System.out.println("In searchFrom");
-
 		final int limitY = vv.length;
 		final int limitX = vv[0].length;
 		int y = startY;
 		int x = startX;
+
+
 		for (int idx = 1; idx < searchWord.length(); idx++) {
 			y += dir.getIncrementY();
 			x += dir.getIncrementX();
@@ -167,32 +144,8 @@ class WordSearcher {
 				return null;
 			}
 		}
+
 		return new Pair(x, y);
-
-		//		IntStream.rangeClosed(startY - 1, startY + 1)
-		//			.mapToObj(rowIndex ->
-		//  			IntStream.rangeClosed(startX - 1, startX + 1)
-		//  				.filter(colIndex -> rowIndex > 0 && rowIndex < limit && colIndex > 0 && colIndex < limit)
-		//  				.map()
-		//  		).count();
-
-
-		//  private int numberOfAdjacentBombs(Pair index) {
-		//      return (int) IntStream.rangeClosed(index.getY() - 1, index.getX() + 1)
-		//                  .mapToObj(rowIndex ->
-		//                                IntStream.rangeClosed(index.col - 1, index.col + 1)
-		//                                        .filter(colIndex -> colIndex >= 0 && colIndex < colSize && rowIndex >= 0 && rowIndex < rowSize)
-		//                                        .mapToObj(colIndex -> new Index(rowIndex, colIndex)))
-		//              .flatMap(in -> in)
-		//              .filter(in -> !in.equals(index))
-		//              .filter(adj -> getTileValue(adj.row, adj.col) == BOMB)
-		//              .count();
-		//  }
-
 	}
-
-
-
-
 
 }
