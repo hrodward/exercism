@@ -60,7 +60,7 @@ class WordSearcher {
 	private Entry<String, Optional<WordLocation>> search(final String searchWord, final char[][] vv) {
 		char firstLetter = searchWord.charAt(0);
 
-		Optional<WordLocation> findFirst =
+		Optional<WordLocation> wordLocation =
 				IntStream.rangeClosed(1, vv.length)
       	.mapToObj(y ->
       		IntStream.rangeClosed(1, vv[y - 1].length)
@@ -72,7 +72,7 @@ class WordSearcher {
     		.findFirst()
     		.orElse(Optional.empty());
 
-		return new AbstractMap.SimpleEntry<>(searchWord, findFirst);
+		return new AbstractMap.SimpleEntry<>(searchWord, wordLocation);
 
 	}
 
@@ -83,14 +83,14 @@ class WordSearcher {
 
 		Optional<Pair> findFirst =
 				IntStream.rangeClosed(startY - 1, startY + 1)
-				.mapToObj(rowIndex ->
+				.mapToObj(y ->
       		IntStream.rangeClosed(startX - 1, startX + 1)
-    		    .filter(colIndex -> rowIndex > 0 && rowIndex <= limitY && colIndex > 0 && colIndex <= limitX && secondChar == vv[rowIndex - 1][colIndex - 1])
+    		    .filter(x -> y > 0 && y <= limitY && x > 0 && x <= limitX && secondChar == vv[y - 1][x - 1])
         		.mapToObj(colIndex -> {
-      				int diffY = rowIndex - startY;
+      				int diffY = y - startY;
       				int diffX = colIndex - startX;
       				Direction dir = Direction.getDirectionByIncrements(diffX, diffY);
-      				return verifyDirection(searchWord, vv, rowIndex, colIndex, dir);
+      				return verifyDirection(searchWord, vv, y, colIndex, dir);
         		})
         		.filter(pair -> pair != null)
     		)
