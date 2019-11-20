@@ -59,19 +59,21 @@ class WordSearcher {
 
 	private Entry<String, Optional<WordLocation>> search(final String searchWord, final char[][] vv) {
 		char firstLetter = searchWord.charAt(0);
-		for (int y = 1; y <= vv.length; y++) {
-			char[] row = vv[y - 1];
-			for (int x = 1; x <= row.length; x++) {
-				if (firstLetter != row[x - 1]) {
-					continue;
-				}
-				Optional<WordLocation> res = searchFrom(searchWord, vv, y, x);
-				if (res.isPresent()) {
-					return new AbstractMap.SimpleEntry<>(searchWord, res);
-				}
-			}
-		}
-		return new AbstractMap.SimpleEntry<>(searchWord, Optional.empty());
+
+		Optional<WordLocation> findFirst =
+				IntStream.rangeClosed(1, vv.length)
+      	.mapToObj(y ->
+      		IntStream.rangeClosed(1, vv[y - 1].length)
+      			.filter(x -> firstLetter == vv[y - 1][x - 1])
+      			.mapToObj(x -> searchFrom(searchWord, vv, y, x))
+        		.filter(optionalWordLocation -> optionalWordLocation.isPresent())
+      	)
+    		.flatMap(in -> in)
+    		.findFirst()
+    		.orElse(Optional.empty());
+
+		return new AbstractMap.SimpleEntry<>(searchWord, findFirst);
+
 	}
 
 	private Optional<WordLocation> searchFrom(final String searchWord, final char[][] vv, final int startY, final int startX) {
@@ -88,10 +90,9 @@ class WordSearcher {
       				int diffY = rowIndex - startY;
       				int diffX = colIndex - startX;
       				Direction dir = Direction.getDirectionByIncrements(diffX, diffY);
-      				System.out.println("Dir=" + dir);
       				return verifyDirection(searchWord, vv, rowIndex, colIndex, dir);
         		})
-        		.filter(o -> o != null)
+        		.filter(pair -> pair != null)
     		)
     		.flatMap(in -> in)
     		.findFirst();
