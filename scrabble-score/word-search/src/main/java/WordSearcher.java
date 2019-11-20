@@ -1,6 +1,5 @@
 import java.util.AbstractMap;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -26,9 +25,9 @@ class WordSearcher {
 		private final int incrementX;
 		private final int incrementY;
 
-		private Direction(final int y, final int x) {
-			this.incrementY = y;
+		private Direction(final int x, final int y) {
 			this.incrementX = x;
+			this.incrementY = y;
 		}
 
 		public int getIncrementX() {
@@ -41,7 +40,7 @@ class WordSearcher {
 
 		public static Direction getDirectionByIncrements(final int x, final int y) {
 			for (Direction d : EnumSet.allOf(Direction.class)) {
-				if (d.getIncrementX() == x && d.getIncrementY() == y) {
+				if (d.getIncrementY() == y && d.getIncrementX() == x) {
 					return d;
 				}
 			}
@@ -50,22 +49,28 @@ class WordSearcher {
 
 	}
 
+	private char[][] vv;
+	private String searchWord;
+
 	public Map<String, Optional<WordLocation>> search(final Set<String> searchWords, final char[][] vv) {
+		this.vv = vv;
+
 		return searchWords
 				.stream()
-				.map(word -> search(word, vv))
+				.map(word -> search(word))
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 	}
 
-	private Entry<String, Optional<WordLocation>> search(final String searchWord, final char[][] vv) {
+	private Entry<String, Optional<WordLocation>> search(final String searchWord) {
+		this.searchWord = searchWord;
 		char firstLetter = searchWord.charAt(0);
 
 		Optional<WordLocation> wordLocation =
 				IntStream.rangeClosed(1, vv.length)
-      	.mapToObj(y ->
-      		IntStream.rangeClosed(1, vv[y - 1].length)
-      			.filter(x -> firstLetter == vv[y - 1][x - 1])
-      			.mapToObj(x -> searchFrom(searchWord, vv, y, x))
+      	.mapToObj(x ->
+      		IntStream.rangeClosed(1, vv[x - 1].length)
+      			.filter(y -> firstLetter == vv[x - 1][y - 1])
+      			.mapToObj(y -> searchFrom(x, y))
         		.filter(optionalWordLocation -> optionalWordLocation.isPresent())
       	)
     		.flatMap(in -> in)
@@ -73,69 +78,46 @@ class WordSearcher {
     		.orElse(Optional.empty());
 
 		return new AbstractMap.SimpleEntry<>(searchWord, wordLocation);
-
 	}
 
-	private Optional<WordLocation> searchFrom(final String searchWord, final char[][] vv, final int startY, final int startX) {
-		final int limitY = vv.length;
-		final int limitX = vv[0].length;
-		final char secondChar = searchWord.charAt(1);
+	private Optional<WordLocation> searchFrom(final int startX, final int startY) {
+		final int limitX = vv.length;
+		final int limitY = vv[0].length;
+		final char secondChar = searchWord.charAt(1); // first char has already been found
 
 		Optional<Pair> findFirst =
-				IntStream.rangeClosed(startY - 1, startY + 1)
-				.mapToObj(y ->
-      		IntStream.rangeClosed(startX - 1, startX + 1)
-    		    .filter(x -> y > 0 && y <= limitY && x > 0 && x <= limitX && secondChar == vv[y - 1][x - 1])
-        		.mapToObj(colIndex -> {
-      				int diffY = y - startY;
-      				int diffX = colIndex - startX;
-      				Direction dir = Direction.getDirectionByIncrements(diffX, diffY);
-      				return verifyDirection(searchWord, vv, y, colIndex, dir);
-        		})
+				IntStream.rangeClosed(startX - 1, startX + 1)
+				.mapToObj(x ->
+      		IntStream.rangeClosed(startY - 1, startY + 1)
+    		    .filter(y -> x > 0 && x <= limitX && y > 0 && y <= limitY && secondChar == vv[x - 1][y - 1])
+        		.mapToObj(y -> verifyDirection(x, y, Direction.getDirectionByIncrements(x - startX, y - startY)))
         		.filter(pair -> pair != null)
     		)
     		.flatMap(in -> in)
     		.findFirst();
 
 		if (findFirst.isPresent()) {
-			return Optional.of(new WordLocation(new Pair(startX, startY), findFirst.get()));
+			return Optional.of(new WordLocation(new Pair(startY, startX), findFirst.get()));
 		}
 		return Optional.empty();
 	}
 
-	private Pair verifyDirection(final String searchWord, final char[][] vv, final int startY, final int startX, final Direction dir) {
+	private Pair verifyDirection(final int startY, final int startX, final Direction dir) {
 		final int limitY = vv.length;
 		final int limitX = vv[0].length;
-		AtomicInteger y = new AtomicInteger(startY);
 		AtomicInteger x = new AtomicInteger(startX);
-		AtomicInteger idx = new AtomicInteger(2);
+		AtomicInteger y = new AtomicInteger(startY);
+		AtomicInteger idx = new AtomicInteger(2); // first two chars have already been checked
 
 		boolean allMatch = Stream
-			.generate(() -> new Pair(x.addAndGet(dir.getIncrementX()), y.addAndGet(dir.getIncrementY())))
+			.generate(() -> new Pair(x.addAndGet(dir.getIncrementY()), y.addAndGet(dir.getIncrementX())))
 			.limit(searchWord.length() - 2)
 			.allMatch(pair -> {
-		    boolean first = pair.getY() > 0 && pair.getY() <= limitY && pair.getX() > 0 && pair.getX() <= limitX;
-		    return first && searchWord.charAt(idx.getAndIncrement()) == vv[pair.getY() - 1][pair.getX() - 1];
+		    boolean isNotOutOfBoard = pair.getX() > 0 && pair.getX() <= limitX && pair.getY() > 0 && pair.getY() <= limitY;
+		    return isNotOutOfBoard && searchWord.charAt(idx.getAndIncrement()) == vv[pair.getY() - 1][pair.getX() - 1];
 			});
 
 		return allMatch ? new Pair(x.get(), y.get()) : null;
-	}
-
-	public static void main(final String[] args) {
-		WordSearcher wordSearcher= new WordSearcher();
-		Map<String, Optional<WordLocation>> expectedLocations = new HashMap<>();
-		expectedLocations.put("coffee", Optional.of(new WordLocation(new Pair(2, 1), new Pair(7, 1))));
-
-		Set<String> searchWords = expectedLocations.keySet();
-
-		Map<String, Optional<WordLocation>> actualLocations = wordSearcher.search(
-				searchWords,
-				new char[][]{
-					{'x', 'c', 'o', 'f', 'f', 'e', 'e', 'z', 'l', 'p'}
-				}
-				);
-
-		System.out.println(actualLocations);
 	}
 
 }
