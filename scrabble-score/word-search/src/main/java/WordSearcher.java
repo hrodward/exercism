@@ -5,8 +5,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 class WordSearcher {
 
@@ -75,23 +77,14 @@ class WordSearcher {
 	public static void main(final String[] args) {
 		WordSearcher wordSearcher= new WordSearcher();
 		Map<String, Optional<WordLocation>> expectedLocations = new HashMap<>();
-		expectedLocations.put("clojure", Optional.of(new WordLocation(new Pair(1, 10), new Pair(7, 10))));
+		expectedLocations.put("coffee", Optional.of(new WordLocation(new Pair(2, 1), new Pair(7, 1))));
 
 		Set<String> searchWords = expectedLocations.keySet();
 
 		Map<String, Optional<WordLocation>> actualLocations = wordSearcher.search(
 				searchWords,
 				new char[][]{
-					{'j', 'e', 'f', 'b', 'l', 'p', 'e', 'p', 'r', 'e'},
-					{'c', 'a', 'm', 'd', 'c', 'i', 'm', 'g', 't', 'c'},
-					{'o', 'i', 'v', 'o', 'k', 'p', 'r', 'j', 's', 'm'},
-					{'p', 'b', 'w', 'a', 's', 'q', 'r', 'o', 'u', 'a'},
-					{'r', 'i', 'x', 'i', 'l', 'e', 'l', 'h', 'r', 's'},
-					{'w', 'o', 'l', 'c', 'q', 'l', 'i', 'r', 'p', 'c'},
-					{'s', 'c', 'r', 'e', 'e', 'a', 'u', 'm', 'g', 'r'},
-					{'a', 'l', 'x', 'h', 'p', 'b', 'u', 'r', 'y', 'i'},
-					{'j', 'a', 'l', 'a', 'y', 'c', 'a', 'l', 'm', 'p'},
-					{'c', 'l', 'o', 'j', 'u', 'r', 'e', 'r', 'm', 't'}
+					{'x', 'c', 'o', 'f', 'f', 'e', 'e', 'z', 'l', 'p'}
 				}
 				);
 
@@ -112,7 +105,8 @@ class WordSearcher {
       				int diffY = rowIndex - startY;
       				int diffX = colIndex - startX;
       				Direction dir = Direction.getDirectionByIncrements(diffX, diffY);
-      				return verifyDirection(searchWord, vv, startY, startX, dir);
+      				System.out.println("Dir=" + dir);
+      				return verifyDirection(searchWord, vv, rowIndex, colIndex, dir);
         		})
         		.filter(o -> o != null)
     		)
@@ -126,26 +120,36 @@ class WordSearcher {
 	}
 
 	private Pair verifyDirection(final String searchWord, final char[][] vv, final int startY, final int startX, final Direction dir) {
-		final int limitY = vv.length;
 		final int limitX = vv[0].length;
-		int y = startY;
-		int x = startX;
+		final int limitY = vv.length;
+		AtomicInteger y = new AtomicInteger(startY);
+		AtomicInteger x = new AtomicInteger(startX);
+		AtomicInteger idx = new AtomicInteger(2);
 
+		System.out.println("Start coords: [" + startX + "," + startY + "]");
+		boolean allMatch = Stream.generate(() -> new Pair(x.addAndGet(dir.getIncrementX()), y.addAndGet(dir.getIncrementY())))
+			.limit(searchWord.length() - 2)
+			.peek(pair -> System.out.println(pair))
+			.allMatch(pair -> {
+				boolean first = pair.getY() > 0 && pair.getY() <= limitY && pair.getX() > 0 && pair.getX() <= limitX;
+				if (first ) {
+					System.out.println("  first=" + first);
+					char wordChar = searchWord.charAt(idx.getAndIncrement());
+					char boardChar = vv[pair.getY() - 1][pair.getX() - 1];
+					System.out.println("    pairY=" + pair.getY() + ", pariX=" + pair.getX());
+			    boolean second = wordChar == boardChar;
+			    System.out.println("  wordChar=" + wordChar + " vs " + boardChar);
+					return first && second;
+				}
+				return false;
+			});
 
-		for (int idx = 1; idx < searchWord.length(); idx++) {
-			y += dir.getIncrementY();
-			x += dir.getIncrementX();
-			if (y <= 0 || y > limitY || x <= 0 || x > limitX) {
-				return null; // not found
-			}
-			final char currentChar = searchWord.charAt(idx);
-			char charAtBoard = vv[y - 1][x - 1];
-			if (currentChar != charAtBoard) {
-				return null;
-			}
+		if(allMatch) {
+			Pair pair = new Pair(x.get(), y.get());
+			System.out.println("Returning Pair" + pair);
+			return pair;
 		}
-
-		return new Pair(x, y);
+		return null;
 	}
 
 }
