@@ -1,3 +1,7 @@
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 class Markdown {
 
 	private static final String MARKUP_ITALICS = "<em>$1</em>";
@@ -5,61 +9,62 @@ class Markdown {
 	private static final String MARKUP_STRONG = "<strong>$1</strong>";
 	private static final String SYMBOL_STRONG = "__(.+)__";
 
+	final AtomicBoolean activeList = new AtomicBoolean(false);
+
 	String parse(final String markdown) {
 
-		String[] lines = markdown.split("\n");
+		String html = Stream.of(markdown.split("\n"))
+			.map(line -> {
+				String parsedLine = parseLine(line);
+				return openOrCloseList(parsedLine);
+			})
+			.collect(Collectors.joining());
 
-		StringBuilder result = new StringBuilder(); // use StringBuilder instead of String
+		return activeList.get() ? html.concat("</ul>") : html;
+	}
 
-		boolean activeList = false;
-
-		for (String line : lines) { // transform loop to for-each
-
-			String theLine = parseHeader(line);
-
-			if (theLine == null) {
-				theLine = parseListItem(line);
-			}
-
-			if (theLine == null) {
-				theLine = parseParagraph(line);
-			}
-
-			if (theLine.startsWith("<li>") && !activeList) { // replace matches for startsWith; delete unnecessary conditions
-				activeList = true;
-				result.append("<ul>").append(theLine);
-			} else if (!theLine.startsWith("<li>") && activeList) { // replace matches for startsWith
-				activeList = false;
-				result.append("</ul>").append(theLine);
-			} else {
-				result.append(theLine);
-			}
+	private String parseLine(final String line) {
+		String parsedLine = null;
+		switch (line.charAt(0)) {
+			case '#':
+				parsedLine = parseHeader(line);
+				break;
+			case '*':
+				parsedLine = parseListItem(line);
+				break;
+			default:
+				parsedLine = parseParagraph(line);
 		}
+		return parsedLine;
+	}
 
-		if (activeList) {
-			result.append("</ul>");
-		}
-
-		return result.toString();
+	private String openOrCloseList(String parsedLine) {
+		// replace matches for startsWith; delete unnecessary conditions
+		boolean isBeginningOfList = parsedLine.startsWith("<li>") && !activeList.get();
+		if (isBeginningOfList) {
+			activeList.set(true);
+			parsedLine = "<ul>" + parsedLine;
+		} else {
+			boolean listHasEnded = !parsedLine.startsWith("<li>") && activeList.get(); // replace matches for startsWith
+			if (listHasEnded) {
+				activeList.set(false);
+				parsedLine = "</ul>" + parsedLine;
+			}
+		} // delete unnecessary else
+		return parsedLine;
 	}
 
 	private String parseHeader(final String markdown) {
-		// replace loop with startsWith + indexOf
-		if(!markdown.startsWith("#")) {
-			return null;
-		}
+		// replace loop with indexOf
 		int count = markdown.indexOf(" ");
-		return surroundWith(markdown.substring(count + 1), "h" + count); // autobox variable + surroundWith
+		String skipPoundSigns = markdown.substring(count + 1);
+		return surroundWith(skipPoundSigns, "h" + count); // autobox variable + surroundWith
 	}
 
 	private String parseListItem(final String markdown) {
-		if (markdown.startsWith("*")) {
-			String skipAsterisk = markdown.substring(2);
-			String listItemString = parseSomeSymbols(skipAsterisk);
-			return surroundWith(listItemString, "li"); // surroundWith
-		}
-
-		return null;
+		String skipAsterisk = markdown.substring(markdown.indexOf(" ") + 1); // replace hardcoded '2'
+		String listItem = parseSomeSymbols(skipAsterisk);
+		return surroundWith(listItem, "li"); // surroundWith
 	}
 
 	private String parseParagraph(final String markdown) {
