@@ -54,6 +54,14 @@ public class Card implements Comparable<Card> {
 		return val;
 	}
 
+	public Suit getSuit() {
+		return suit;
+	}
+
+	public int getNumber() {
+		return number;
+	}
+
 	@Override
 	public String toString() {
 		return getFaceValue(number) + suit.getRepresentation();
