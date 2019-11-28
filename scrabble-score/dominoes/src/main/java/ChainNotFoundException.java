@@ -1,5 +1,7 @@
 class ChainNotFoundException extends Exception {
-	public ChainNotFoundException(String message) {
+	private static final long serialVersionUID = 1L;
+
+	public ChainNotFoundException(final String message) {
 		super(message);
 	}
 }
