@@ -1,12 +1,23 @@
 import java.util.Objects;
 
 class Domino {
-	private final int left;
-	private final int right;
+	private int left;
+	private int right;
 
 	Domino(final int left, final int right) {
 		this.left = left;
 		this.right = right;
+	}
+
+	Domino reverse() {
+		int tempValue = left;
+		this.left = right;
+		this.right = tempValue;
+		return this;
+	}
+
+	boolean isDouble() {
+		return left == right;
 	}
 
 	int getLeft() {
